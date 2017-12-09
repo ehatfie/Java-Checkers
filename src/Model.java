@@ -9,7 +9,7 @@ public class Model {
     private Sprite sprite;
     private ArrayList<Sprite> black = new ArrayList<>();
     private ArrayList<Sprite> red = new ArrayList<>();
-    private ArrayList<Sprite> sprites = new ArrayList();
+
 
     Model()throws IOException {
         for(int i = 0; i < 12; i++){
@@ -23,10 +23,12 @@ public class Model {
     }
 
     public void update(Graphics g){
-        for(int i = 0; i < black.size(); i++) {
-            red.get(i).update(g);
+        for(int i = 0; i < black.size(); i++)
             black.get(i).update(g);
-        }
+
+        for(int i = 0; i < red.size(); i++)
+            red.get(i).update(g);
+
     }
     // initializes black sprites
     public void placeBlack(ArrayList<Sprite> black) {
@@ -112,4 +114,8 @@ public class Model {
 
         return block;
     }
+    // removes black checker
+    public void removeBlack(int loc){ black.remove(loc); }
+    // removes red checker
+    public void removeRed(int loc){ red.remove(loc); }
 }

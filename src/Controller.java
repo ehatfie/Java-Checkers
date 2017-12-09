@@ -54,6 +54,11 @@ public class Controller implements MouseListener {
                     int[] moveTo = pixelToBlock(e.getX(), e.getY());
 
                     if(checkMove(moveTo, selectedSprite)){
+                        // removes the jumped checker, first is for up right, second up left
+                        if(moveTo[1] == selectedSprite.getBlock()[1] + 2)
+                            model.removeBlack(model.getBlackSpriteLocation(new int[] {moveTo[0] - 1, moveTo[1] - 1 }));
+                        else if (moveTo[1] == selectedSprite.getBlock()[1] -2)
+                            model.removeBlack(model.getBlackSpriteLocation(new int[] {moveTo[0] - 1, moveTo[1] + 1 }));
                         model.moveRedSprite(index, moveTo);
                         hasSprite = false;
                         selectedSprite.setImage("redTransparent.png");
@@ -62,9 +67,6 @@ public class Controller implements MouseListener {
                     else{
                         System.out.println("Try another move");
                     }
-
-
-                   //
                 }
             }
             // black turn
@@ -87,6 +89,10 @@ public class Controller implements MouseListener {
                     int[] moveTo = pixelToBlock(e.getX(), e.getY());
 
                     if(checkMove(moveTo, selectedSprite)){
+                        if(moveTo[1] == selectedSprite.getBlock()[1] + 2)
+                            model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] + 1, moveTo[1] - 1 }));
+                        else if (moveTo[1] == selectedSprite.getBlock()[1] - 2)
+                            model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] + 1, moveTo[1] + 1 }));
                         model.moveBlackSprite(index, moveTo);
                         hasSprite = false;
                         selectedSprite.setImage("grayTransparent.png");
@@ -113,12 +119,11 @@ public class Controller implements MouseListener {
         }
     }
 
-
     @Override
     public void mouseClicked(MouseEvent e) { }
 
     @Override
-    public void mouseReleased(MouseEvent e) {   }
+    public void mouseReleased(MouseEvent e) {  }
     @Override
     public void mouseEntered(MouseEvent e) { }
 
@@ -143,27 +148,50 @@ public class Controller implements MouseListener {
         // for red turn
         if(playerTurn) {
             // if there is a red sprite at the jump location
-            if(model.getRedSpriteLocation(dest) > 0)
+            if(model.getRedSpriteLocation(dest) >= 0)
                 return false;
             else if (loc[0] == dest[0] - 1 && dest[0] > 0 && dest[1] > 0 && dest[1] < 9) {
                 if (loc[1] == dest[1] + 1 || loc[1] == dest[1] - 1)
                     return true;
                 return false;
-            } else if (loc[0] == dest[0] + 2) { // for a jump
-
+            } else if (loc[0] == dest[0] - 2) { // for a jump
+                int[] check = new int[2];
+                check[0] = dest[0] -1;
+                if(dest[1] > loc[1]){ // if the jump is up and right
+                    check[1] = dest[1] - 1;
+                    // if there is a sprite
+                }
+                else if(dest[1] < loc[1]){ // if jump is up and left
+                    check[1] = dest[1] + 1;
+                }
+                if(model.getBlackSpriteLocation(check) >= 0)
+                    return true;
+                /*
+                    might be some issues here at some point in the future
+                 */
             }
         }
         // for black turn
         else{
             // for a normal move
-            if(model.getBlackSpriteLocation(dest) > 0)
+            if(model.getBlackSpriteLocation(dest) >= 0)
                 return false;
             if (loc[0] == dest[0] + 1 && dest[0] > 0 && dest[1] > 0 && dest[1] < 9) {
                 if (loc[1] == dest[1] + 1 || loc[1] == dest[1] - 1)
                     return true;
                 return false;
-            } else if (loc[0] == dest[0] - 2){ // for a jump
-
+            } else if (loc[0] == dest[0] + 2){ // for a jump
+                int[] check = new int[2];
+                check[0] = dest[0] + 1;
+                if(dest[1] > loc[1]){ // if the jump is down and right
+                    check[1] = dest[1] - 1;
+                    // if there is a sprite
+                }
+                else if(dest[1] < loc[1]){ // if jump is up and left
+                    check[1] = dest[1] + 1;
+                }
+                if(model.getRedSpriteLocation(check) >= 0)
+                    return true;
             }
         }
 
