@@ -44,7 +44,8 @@ public class Controller implements MouseListener {
                     // if the index is in the number of sprites
                     if (index >= 0 && index <= 12) {
                         System.out.println("Success");
-                        selectedSprite = model.getRedSprite(index);// maybe dont need this
+                        selectedSprite = model.getRedSprite(index);// maybe dont need this, remove at end
+                        selectedSprite.setImage("redSelected.png");
                         hasSprite = true; // set the boolean for having a sprite selected
                     }
                 }
@@ -55,6 +56,7 @@ public class Controller implements MouseListener {
                     if(checkMove(moveTo, selectedSprite)){
                         model.moveRedSprite(index, moveTo);
                         hasSprite = false;
+                        selectedSprite.setImage("redTransparent.png");
                         playerTurn = false;
                     }
                     else{
@@ -76,6 +78,7 @@ public class Controller implements MouseListener {
                     if (index >= 0 && index <= 12) {
                         System.out.println("Success");
                         selectedSprite = model.getBlackSprite(index);// maybe dont need this
+                        selectedSprite.setImage("graySelected.png");
                         hasSprite = true; // set the boolean for having a sprite selected
                     }
                 }
@@ -86,6 +89,7 @@ public class Controller implements MouseListener {
                     if(checkMove(moveTo, selectedSprite)){
                         model.moveBlackSprite(index, moveTo);
                         hasSprite = false;
+                        selectedSprite.setImage("grayTransparent.png");
                         playerTurn = true;
                     }
                     else {
@@ -96,6 +100,16 @@ public class Controller implements MouseListener {
             }
         } else if (SwingUtilities.isRightMouseButton(e)) {
             // gets here if right mouse button was clicked
+            if(playerTurn){
+                hasSprite = false;
+                selectedSprite.setImage("redTransparent.png");
+                System.out.println("Deselected red checker");
+            }
+            else{
+                hasSprite = false;
+                selectedSprite.setImage("grayTransparent.png");
+                System.out.println("Deselected gray checker");
+            }
         }
     }
 
@@ -151,7 +165,6 @@ public class Controller implements MouseListener {
             } else if (loc[0] == dest[0] - 2){ // for a jump
 
             }
-
         }
 
         return false;

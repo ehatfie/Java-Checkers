@@ -43,7 +43,6 @@ public class Sprite {
         }
     }
     public Image getImage(){ return image;  }
-
     public void update(Graphics g) {
         // moves the sprite
         g.drawImage(getImage(), getX(), getY(), 60,60, null);
