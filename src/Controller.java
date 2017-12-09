@@ -40,14 +40,13 @@ public class Controller implements MouseListener {
                 // if there is no selected sprite
                 if (hasSprite == false) {
                     // get index of the sprite in the array
-                    index = model.getRedSpriteLocation(e.getX(), e.getY());
+                    index = model.getRedSpriteLocation(pixelToBlock(e.getX(), e.getY()));
                     // if the index is in the number of sprites
-                    if (index >= 0 && index <= 16) {
+                    if (index >= 0 && index <= 12) {
                         System.out.println("Success");
                         selectedSprite = model.getRedSprite(index);// maybe dont need this
                         hasSprite = true; // set the boolean for having a sprite selected
                     }
-
                 }
                 // if a sprite is already selected
                 else {
@@ -62,13 +61,14 @@ public class Controller implements MouseListener {
                 }
             }
             // black turn
+
             else{
                 // if there is no selected sprite
                 if (hasSprite == false) {
                     // get index of the sprite in the array
-                    index = model.getBlackSpriteLocation(e.getX(), e.getY());
+                    index = model.getBlackSpriteLocation(pixelToBlock(e.getX(), e.getY()));
                     // if the index is in the number of sprites
-                    if (index >= 0 && index <= 16) {
+                    if (index >= 0 && index <= 12) {
                         System.out.println("Success");
                         selectedSprite = model.getBlackSprite(index);// maybe dont need this
                         hasSprite = true; // set the boolean for having a sprite selected
@@ -76,12 +76,15 @@ public class Controller implements MouseListener {
                 }
                 // if a sprite is already selected
                 else {
-                    // only lets the checker move one spot in front, need to add something for if its jumping enemy
-                    if (e.getY() > model.getBlackSprite(index).getY() + 80
-                            && e.getY() < model.getBlackSprite(index).getY()+160) {
-                        model.moveBlackSprite(index, e.getX(), e.getY()); // move the sprite to the new location
+                    int[] moveTo = pixelToBlock(e.getX(), e.getY());
+
+                    if(checkMove(moveTo, selectedSprite)){
+                        model.moveBlackSprite(index, moveTo);
                         hasSprite = false;
                         playerTurn = true;
+                    }
+                    else {
+                        System.out.println("Try another move");
                     }
                 }
 
@@ -108,7 +111,7 @@ public class Controller implements MouseListener {
         int[] block = new int[2];
 
         block[0] = block[0] = abs(16-(((y-40) / 80)+8));
-        block[1] = (x / 80);
+        block[1] = ((x + 50) / 80);
 
         return block;
     }
@@ -117,17 +120,33 @@ public class Controller implements MouseListener {
     public boolean checkMove(int[] dest, Sprite sprite){
         // player turn
         // if -1 y and +1 or -1 x
-        int[] loc = sprite.getBlock();
-        if(loc[0] == dest[0] - 1 && dest[0] > 0 && dest[1] > 0 && dest[1] < 9) {
-            if(loc[1] == dest[1]+ 1 || loc[1] == dest[1] -1)
-                return true;
-
+        int[] loc = sprite.getBlock(); // current location of the checker
+        // for red turn
+        if(playerTurn) {
+            // if there is a red sprite at the jump location
+            if(model.getRedSpriteLocation(dest) > 0)
                 return false;
+            else if (loc[0] == dest[0] - 1 && dest[0] > 0 && dest[1] > 0 && dest[1] < 9) {
+                if (loc[1] == dest[1] + 1 || loc[1] == dest[1] - 1)
+                    return true;
+                return false;
+            } else if (loc[0] == dest[0] + 2) { // for a jump
+
+            }
         }
-        else if (loc[0] == dest[0] +2)
-        {
+        // for black turn
+        else{
+            // for a normal move
+            if (loc[0] == dest[0] + 1 && dest[0] > 0 && dest[1] > 0 && dest[1] < 9) {
+                if (loc[1] == dest[1] + 1 || loc[1] == dest[1] - 1)
+                    return true;
+                return false;
+            } else if (loc[0] == dest[0] - 2){ // for a jump
+
+            }
 
         }
+
         return false;
     }
     public static void main(String[] args) throws Exception{
@@ -140,6 +159,9 @@ public class Controller implements MouseListener {
 }
 /*
     TODO:
+        Let black move
+        implement jumping
+
 
         MOVING:
         -   if its a jump then remove the checker

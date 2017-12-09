@@ -12,7 +12,7 @@ public class Model {
     private ArrayList<Sprite> sprites = new ArrayList();
 
     Model()throws IOException {
-        for(int i = 0; i < 16; i++){
+        for(int i = 0; i < 12; i++){
             red.add(new Sprite("redTransparent.png"));
             black.add(new Sprite("grayTransparent.png"));
         }
@@ -63,39 +63,31 @@ public class Model {
     }
 
     // gets the location in the sprite array of the sprite at the x/y click location
-    public int getRedSpriteLocation(int x, int y) {
+    public int getRedSpriteLocation(int[] location) {
         Sprite temp;
-        int xLoc, yLoc;
+        int[] currentLoc;
         for(int i = 0; i < red.size(); i++){
             temp = red.get(i);
-            xLoc = temp.getX();
-            yLoc = temp.getY();
-            if(x < xLoc + 80 && x > xLoc ){
-                if(y < yLoc + 80 && y > yLoc){
+           currentLoc = temp.getBlock();
+            if(location[0] == currentLoc[0] && location[1] == currentLoc[1] )
                     return i;
-                }
             }
-        }
         // if there is no sprite at the click location return a -1
         return -1;
     }
-
     // returns the index of the sprite located at the coordinates
-    public int getBlackSpriteLocation(int x, int y) {
+    public int getBlackSpriteLocation(int[] location) {
         Sprite temp;
-        int xLoc, yLoc;
+        int[] currentLoc;
         for(int i = 0; i < black.size(); i++){
             temp = black.get(i);
-            xLoc = temp.getX();
-            yLoc = temp.getY();
-            if(x < xLoc + 80 && x > xLoc ){
-                if(y < yLoc + 80 && y > yLoc){
-                    return i;
-                }
-            }
+            currentLoc = temp.getBlock();
+            if(location[0] == currentLoc[0] && location[1] == currentLoc[1] )
+                return i;
         }
         // if there is no sprite at the click location return a -1
         return -1;
+
     }
     // returns red sprite object
     public Sprite getRedSprite(int loc){ return red.get(loc); }
@@ -103,18 +95,12 @@ public class Model {
     public Sprite getBlackSprite(int loc){ return black.get(loc); }
     // moves red checkers
     public void moveRedSprite(int index, int[] destination){
-
         red.get(index).setBlock(destination);
-
         System.out.println("Moved Red");
     }
     // moves black checkers
-    public void moveBlackSprite(int index, int x, int y){
-        int blockX = (x-50)/80;
-        int blockY = (y-50)/80;
-
-        black.get(index).setY(blockY*80 + 60);
-        black.get(index).setX(blockX*80 + 60);
+    public void moveBlackSprite(int index, int[] destination){
+        black.get(index).setBlock(destination);
         System.out.println("Moved Black");
     }
     // turns pixel locations into block locations

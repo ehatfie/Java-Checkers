@@ -17,8 +17,8 @@ public class Sprite {
         jpgName = "VOID";
         locationX = 0;
         locationY = 0;
-        block[0] = 0; // x
-        block[1] = 0; // y
+        block[0] = 0; // y
+        block[1] = 0; // x
     }
 
     public Sprite(String picName) {
