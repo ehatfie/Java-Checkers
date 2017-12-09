@@ -57,6 +57,11 @@ public class Controller implements MouseListener {
                         hasSprite = false;
                         playerTurn = false;
                     }
+                    else{
+                        System.out.println("Try another move");
+                    }
+
+
                    //
                 }
             }
@@ -111,7 +116,7 @@ public class Controller implements MouseListener {
         int[] block = new int[2];
 
         block[0] = block[0] = abs(16-(((y-40) / 80)+8));
-        block[1] = ((x + 50) / 80);
+        block[1] = ((x + 40) / 80);
 
         return block;
     }
@@ -137,6 +142,8 @@ public class Controller implements MouseListener {
         // for black turn
         else{
             // for a normal move
+            if(model.getBlackSpriteLocation(dest) > 0)
+                return false;
             if (loc[0] == dest[0] + 1 && dest[0] > 0 && dest[1] > 0 && dest[1] < 9) {
                 if (loc[1] == dest[1] + 1 || loc[1] == dest[1] - 1)
                     return true;

@@ -68,7 +68,7 @@ public class Model {
         int[] currentLoc;
         for(int i = 0; i < red.size(); i++){
             temp = red.get(i);
-           currentLoc = temp.getBlock();
+            currentLoc = temp.getBlock();
             if(location[0] == currentLoc[0] && location[1] == currentLoc[1] )
                     return i;
             }
