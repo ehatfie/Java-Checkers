@@ -115,7 +115,7 @@ public class Model {
         return block;
     }
     // removes black checker
-    public void removeBlack(int loc){ black.remove(loc); }
+    public void removeBlack(int loc){ black.get(loc).kill(); }
     // removes red checker
-    public void removeRed(int loc){ red.remove(loc); }
+    public void removeRed(int loc){ red.get(loc).kill(); }
 }

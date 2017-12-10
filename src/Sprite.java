@@ -12,6 +12,7 @@ public class Sprite {
     private int locationY;
     private Image image;
     private int[] block = new int[2];
+    private boolean alive;
 
     public Sprite(){
         jpgName = "VOID";
@@ -19,12 +20,14 @@ public class Sprite {
         locationY = 0;
         block[0] = 0; // y
         block[1] = 0; // x
+        alive = true;
     }
 
     public Sprite(String picName) {
         setImage(picName);
         locationX = 0;
         locationY = 0;
+        alive = true;
     }
 
     public int getX(){  return (block[1]-1)*80+60;   }
@@ -45,10 +48,12 @@ public class Sprite {
     public Image getImage(){ return image;  }
     public void update(Graphics g) {
         // moves the sprite
-        g.drawImage(getImage(), getX(), getY(), 60,60, null);
+        if(alive)
+            g.drawImage(getImage(), getX(), getY(), 60,60, null);
         // picture, location for top left, width/height of the icon, idk what observer is
 
     }
+    public void kill(){ alive = false;}
 }
 /*
     blockl (1,1) is bottom left

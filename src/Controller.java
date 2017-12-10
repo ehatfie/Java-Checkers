@@ -207,8 +207,10 @@ public class Controller implements MouseListener {
 }
 /*
     TODO:
-        Let black move
-        implement jumping
+        intro menu
+        ai
+        multi-jump
+
 
 
         MOVING:
@@ -219,6 +221,8 @@ public class Controller implements MouseListener {
     IDEAS:
         -   each sprite has its (x,y) block number in it, can only move -1 to x block if it isnt jumping
         -   stack to track the moves
+            + Each sprite stays, if its jumped some boolean changes to false
+            + that way if you go back
     FEATURES:
         -   An option to show best move
         -   When you click a checker it lights up
