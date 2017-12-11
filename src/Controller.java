@@ -103,10 +103,18 @@ public class Controller implements MouseListener {
                             model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] + 1, moveTo[1] - 1 }));
                         else if (moveTo[1] == selectedSprite.getBlock()[1] - 2)
                             model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] + 1, moveTo[1] + 1 }));
+
+                        if(moveTo[1] == selectedSprite.getBlock()[1] + 2 || moveTo[1] == selectedSprite.getBlock()[1] - 2)
+                            check = true;
                         model.moveBlackSprite(index, moveTo);
-                        hasSprite = false;
-                        selectedSprite.setImage("grayTransparent.png");
-                        playerTurn = true;
+
+                        if(check)
+                            again = checkNext(moveTo);
+                        if(!again) {
+                            hasSprite = false;
+                            selectedSprite.setImage("grayTransparent.png");
+                            playerTurn = true;
+                        }
                     }
                     // if move is not valid
                     else {
@@ -278,11 +286,9 @@ public class Controller implements MouseListener {
         multi-jump
         game over menu
         turning them into a queen if it makes it to the opposite side
-
         MOVING:
         -   if its a jump then remove the checker
         -   dont let the user move sideways
-
     IDEAS:
         -   each sprite has its (x,y) block number in it, can only move -1 to x block if it isnt jumping
         -   stack to track the moves
@@ -293,6 +299,4 @@ public class Controller implements MouseListener {
         -   When you click a checker it lights up
         -   Maybe difficulty settings where when you click the checker you can see possible moves
         -   Timer
-
-
  */
