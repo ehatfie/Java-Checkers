@@ -71,7 +71,7 @@ public class Model {
         for(int i = 0; i < red.size(); i++){
             temp = red.get(i);
             currentLoc = temp.getBlock();
-            if(location[0] == currentLoc[0] && location[1] == currentLoc[1] )
+            if(location[0] == currentLoc[0] && location[1] == currentLoc[1] && temp.isAlive() )
                     return i;
             }
         // if there is no sprite at the click location return a -1
@@ -84,7 +84,7 @@ public class Model {
         for(int i = 0; i < black.size(); i++){
             temp = black.get(i);
             currentLoc = temp.getBlock();
-            if(location[0] == currentLoc[0] && location[1] == currentLoc[1] )
+            if(location[0] == currentLoc[0] && location[1] == currentLoc[1] && temp.isAlive())
                 return i;
         }
         // if there is no sprite at the click location return a -1
@@ -98,11 +98,19 @@ public class Model {
     // moves red checkers
     public void moveRedSprite(int index, int[] destination){
         red.get(index).setBlock(destination);
+        if(destination[0] == 8) {
+            red.get(index).setKing();
+            red.get(index).setImage("redKing.png");
+        }
         System.out.println("Moved Red");
     }
     // moves black checkers
     public void moveBlackSprite(int index, int[] destination){
         black.get(index).setBlock(destination);
+        if(destination[0] == 1){
+            black.get(index).setKing();
+            black.get(index).setImage("blackKing.png");
+        }
         System.out.println("Moved Black");
     }
     // turns pixel locations into block locations

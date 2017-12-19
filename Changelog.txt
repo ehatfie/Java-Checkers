@@ -2,3 +2,6 @@
    -   Checkers now cant move on teammates
    -   Checkers now have a yellow hue if selected
    -   Checkers are now deselected with right click
+12/18/2017
+   -   Checkers now can jump multiple times
+   -   Began implementing becoming king

@@ -66,11 +66,12 @@ public class Controller implements MouseListener {
                             check = true;
                         model.moveRedSprite(index, moveTo);
                         if(check)
-                            again = checkNext(moveTo);
+                            again = checkNext();
                         if(!again) {
                             hasSprite = false;
                             selectedSprite.setImage("redTransparent.png");
                             playerTurn = false;
+                            again = false;
                         }
                     }
                     // if move is not valid
@@ -103,10 +104,17 @@ public class Controller implements MouseListener {
                             model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] + 1, moveTo[1] - 1 }));
                         else if (moveTo[1] == selectedSprite.getBlock()[1] - 2)
                             model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] + 1, moveTo[1] + 1 }));
+                        if(moveTo[1] == selectedSprite.getBlock()[1] + 2 || moveTo[1] == selectedSprite.getBlock()[1] - 2)
+                            check = true;
                         model.moveBlackSprite(index, moveTo);
-                        hasSprite = false;
-                        selectedSprite.setImage("grayTransparent.png");
-                        playerTurn = true;
+                        if(check)
+                            again = checkNext();
+                        if(!again) {
+                            hasSprite = false;
+                            selectedSprite.setImage("grayTransparent.png");
+                            playerTurn = true;
+                            again = false;
+                        }
                     }
                     // if move is not valid
                     else {
@@ -159,7 +167,7 @@ public class Controller implements MouseListener {
         // for red turn
         if(playerTurn) {
             // if there is a red sprite at the jump location
-            if(model.getRedSpriteLocation(dest) >= 0)
+            if(model.getRedSpriteLocation(dest) >= 0|| model.getBlackSpriteLocation(dest) >= 0)
                 return false;
             else if (loc[0] == dest[0] - 1 && dest[0] > 0 && dest[1] > 0 && dest[1] < 9) {
                 if (loc[1] == dest[1] + 1 || loc[1] == dest[1] - 1)
@@ -208,54 +216,83 @@ public class Controller implements MouseListener {
 
         return false;
     }
-    public boolean checkNext(int[] previousBlock){
+    public boolean checkNext(){
         int[] currentBlock = selectedSprite.getBlock();
         int[] temp = new int[2];
-        boolean good;
-        int loc = -1;
+
+        int loc;
         // maybe 4 if statements for the values of i, each manipulates current block then check against previous
         // check in the 3 locations that are not previous block
         for(int i = 0; i < 2; i++) {
             if (i == 0) {
-                temp[0] = currentBlock[0] + 1;
+                if(playerTurn) // if player turn then temp[0] is one up from currentBlock[0], otherway for black turn
+                    temp[0] = currentBlock[0] + 1;
+                else
+                    temp[0] = currentBlock[0] - 1;
                 temp[1] = currentBlock[1] + 1;
             } else if (i == 1) {
-                temp[0] = currentBlock[0] + 1;
+                if(playerTurn)
+                    temp[0] = currentBlock[0] + 1;
+                else
+                    temp[0] = currentBlock[0] - 1;
                 temp[1] = currentBlock[1] - 1;
             }
-            if (playerTurn) {
+            if (playerTurn)
                 loc = model.getBlackSpriteLocation(temp);
-                if (loc >= 0)
-                    if (checkNextt(loc, currentBlock))
-                        return true;
-            }
+
+            else
+                loc = model.getRedSpriteLocation(temp);
+            if (loc >= 0)
+                if (checkNext(loc))
+                    return true;
         }
 
         return false;
     }
-    public boolean checkNextt(int loc, int[] previousBlock){
+    public boolean checkNext(int loc){
         Sprite sprite2;
-        int[] temp3, curentBlock;
+        int[] temp3, currentBlock;
         int temp2 = -1;
 
         if(playerTurn) {
-            sprite2 = model.getBlackSprite(loc);
-            curentBlock = sprite2.getBlock();
-            temp3 = curentBlock;
+            sprite2 = model.getBlackSprite(loc); // get the sprite that were going to use to check for jumps
+            currentBlock = sprite2.getBlock(); // gets current block
+            temp3 = new int[] {currentBlock[0], currentBlock[1]}; // puts it in a temporary variable, have been having issues otherwise
             // goes through 2 it can jump
-            if(temp3[0] + 1 <=8) {
+            if(temp3[0] + 1 <= 8) { // if the block is on the board
                 for (int i = 0; i < 2; i++) {
                     if (i == 0) {
-                        temp2 = model.getBlackSpriteLocation(new int[]{temp3[0] + 1, temp3[1] + 1});
+                        temp3[0] += 1;
+                        temp3[1] += 1;
                     } else if (i == 1) {
-                        temp2 = model.getBlackSpriteLocation(new int[]{temp3[0] + 1, temp3[1] - 1});
+                        temp3[0] += 1;
+                        temp3[1] -= 1;
                     }
-                    // of the block being checked isnt the one with the red checker
-                    // look for a checker, if one is found good = true meaning the turn is not over
-                    if (temp2 == -1) {
+                    if (temp3[1] > 8 || temp3[1] < 1)// if out of bounds
+                        return false;
+                    if (model.getBlackSpriteLocation(temp3) == -1)
                         return true;
-                    }
+                }
 
+            }
+        }
+        else{
+            sprite2 = model.getRedSprite(loc);
+            currentBlock = sprite2.getBlock();
+            temp3 = new int[]{currentBlock[0], currentBlock[1]};
+            if(temp3[0] - 1 >= 1){
+                for(int i = 0; i < 2; i++) {
+                    if (i == 0) {
+                        temp3[0] -= 1;
+                        temp3[1] += 1;
+                    } else if (i == 1) {
+                        temp3[0] -= 1;
+                        temp3[1] -= 1;
+                    }
+                    if (temp3[1] > 8 || temp3[1] < 1)// if out of bounds
+                        return false;
+                    if (model.getRedSpriteLocation(temp3) == -1)
+                        return true;
                 }
             }
         }
@@ -290,7 +327,7 @@ public class Controller implements MouseListener {
             + that way if you go back
     FEATURES:
         -   An option to show best move
-        -   When you click a checker it lights up
+
         -   Maybe difficulty settings where when you click the checker you can see possible moves
         -   Timer
 

@@ -13,6 +13,7 @@ public class Sprite {
     private Image image;
     private int[] block = new int[2];
     private boolean alive;
+    private boolean king;
 
     public Sprite(){
         jpgName = "VOID";
@@ -21,6 +22,7 @@ public class Sprite {
         block[0] = 0; // y
         block[1] = 0; // x
         alive = true;
+        king = false;
     }
 
     public Sprite(String picName) {
@@ -28,6 +30,7 @@ public class Sprite {
         locationX = 0;
         locationY = 0;
         alive = true;
+        king = false;
     }
 
     public int getX(){  return (block[1]-1)*80+60;   }
@@ -54,6 +57,8 @@ public class Sprite {
 
     }
     public void kill(){ alive = false;}
+    public boolean isAlive(){ return alive; }
+    public void setKing(){ king = true; }
 }
 /*
     blockl (1,1) is bottom left
