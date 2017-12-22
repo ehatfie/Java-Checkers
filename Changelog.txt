@@ -5,3 +5,7 @@
 12/18/2017
    -   Checkers now can jump multiple times
    -   Began implementing becoming king
+12/21/2017
+   -   Checkers can now become a king and jump in multi directions
+   -   Fixed bug where gray checker could land on a red checker
+   -   Realized how arrays actually work

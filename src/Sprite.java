@@ -59,6 +59,7 @@ public class Sprite {
     public void kill(){ alive = false;}
     public boolean isAlive(){ return alive; }
     public void setKing(){ king = true; }
+    public boolean isKing() { return king; }
 }
 /*
     blockl (1,1) is bottom left

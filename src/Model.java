@@ -98,21 +98,17 @@ public class Model {
     // moves red checkers
     public void moveRedSprite(int index, int[] destination){
         red.get(index).setBlock(destination);
-        if(destination[0] == 8) {
+        if(destination[0] == 8)
             red.get(index).setKing();
-            red.get(index).setImage("redKing.png");
-        }
         System.out.println("Moved Red");
     }
     // moves black checkers
     public void moveBlackSprite(int index, int[] destination){
         black.get(index).setBlock(destination);
-        if(destination[0] == 1){
+        if(destination[0] == 1)
             black.get(index).setKing();
-            black.get(index).setImage("blackKing.png");
-        }
         System.out.println("Moved Black");
-    }
+        }
     // turns pixel locations into block locations
     public int[] pixelToBlock(int x, int y){
         int[] block = new int[2];

@@ -69,7 +69,10 @@ public class Controller implements MouseListener {
                             again = checkNext();
                         if(!again) {
                             hasSprite = false;
-                            selectedSprite.setImage("redTransparent.png");
+                            if(selectedSprite.isKing())
+                                selectedSprite.setImage("redKing.png");
+                            else
+                                selectedSprite.setImage("redTransparent.png");
                             playerTurn = false;
                             again = false;
                         }
@@ -100,10 +103,18 @@ public class Controller implements MouseListener {
                     int[] moveTo = pixelToBlock(e.getX(), e.getY());
                     // if move is valid
                     if(checkMove(moveTo, selectedSprite)){
-                        if(moveTo[1] == selectedSprite.getBlock()[1] + 2)
-                            model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] + 1, moveTo[1] - 1 }));
-                        else if (moveTo[1] == selectedSprite.getBlock()[1] - 2)
-                            model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] + 1, moveTo[1] + 1 }));
+                        if(moveTo[0] == selectedSprite.getBlock()[0] - 2){
+                            if(moveTo[1] == selectedSprite.getBlock()[1] + 2)
+                                model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] + 1, moveTo[1] - 1 }));
+                            else if (moveTo[1] == selectedSprite.getBlock()[1] - 2)
+                                model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] + 1, moveTo[1] + 1 }));
+                        }
+                        else if(moveTo[0] == selectedSprite.getBlock()[0] + 2){
+                            if(moveTo[1] == selectedSprite.getBlock()[1] + 2)
+                                model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] - 1, moveTo[1] - 1 }));
+                            else if (moveTo[1] == selectedSprite.getBlock()[1] - 2)
+                                model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] - 1, moveTo[1] + 1 }));
+                        }
                         if(moveTo[1] == selectedSprite.getBlock()[1] + 2 || moveTo[1] == selectedSprite.getBlock()[1] - 2)
                             check = true;
                         model.moveBlackSprite(index, moveTo);
@@ -111,7 +122,10 @@ public class Controller implements MouseListener {
                             again = checkNext();
                         if(!again) {
                             hasSprite = false;
-                            selectedSprite.setImage("grayTransparent.png");
+                            if(selectedSprite.isKing())
+                                selectedSprite.setImage("grayKing.png");
+                            else
+                                selectedSprite.setImage("grayTransparent.png");
                             playerTurn = true;
                             again = false;
                         }
@@ -127,11 +141,16 @@ public class Controller implements MouseListener {
             // gets here if right mouse button was clicked
             if(playerTurn){
                 hasSprite = false;
-                selectedSprite.setImage("redTransparent.png");
+                if(selectedSprite.isKing())
+                    selectedSprite.setImage("redKing.png");
+                else
+                    selectedSprite.setImage("redTransparent.png");
                 System.out.println("Deselected red checker");
             }
             else{
                 hasSprite = false;
+                if(selectedSprite.isKing())
+                    selectedSprite.setImage("grayKing.png");
                 selectedSprite.setImage("grayTransparent.png");
                 System.out.println("Deselected gray checker");
             }
@@ -167,50 +186,63 @@ public class Controller implements MouseListener {
         // for red turn
         if(playerTurn) {
             // if there is a red sprite at the jump location
-            if(model.getRedSpriteLocation(dest) >= 0|| model.getBlackSpriteLocation(dest) >= 0)
+            if (model.getRedSpriteLocation(dest) >= 0 || model.getBlackSpriteLocation(dest) >= 0)
                 return false;
-            else if (loc[0] == dest[0] - 1 && dest[0] > 0 && dest[1] > 0 && dest[1] < 9) {
-                if (loc[1] == dest[1] + 1 || loc[1] == dest[1] - 1)
-                    return true;
-                return false;
-            } else if (loc[0] == dest[0] - 2) { // for a jump
-                int[] check = new int[2];
-                check[0] = dest[0] -1;
-                if(dest[1] > loc[1]){ // if the jump is up and right
-                    check[1] = dest[1] - 1;
-                    // if there is a sprite
-                }
-                else if(dest[1] < loc[1]){ // if jump is up and left
-                    check[1] = dest[1] + 1;
-                }
-                if(model.getBlackSpriteLocation(check) >= 0)
-                    return true;
+            if (dest[0] > 0 && dest[0] < 9 && dest[1] > 0 && dest[1] < 9) { // if movement is on the board
+                if (loc[0] == dest[0] - 1 ||(sprite.isKing() && loc[0] == dest[0] + 1)) {
+                    if (loc[1] == dest[1] + 1 || loc[1] == dest[1] - 1)
+                        return true;
+                    return false;
+                } else if (sprite.isKing() && loc[0] == dest[0] + 1) {
+                    if (loc[1] == dest[1] + 1 || loc[1] == dest[1] - 1)
+                        return true;
+                    return false;
+                } else if (loc[0] == dest[0] - 2 || (sprite.isKing() && loc[0] == dest[0] + 2)) { // for a jump
+                    int checkY, checkX = 0;
+                    if(loc[0] == dest[0] -2)
+                        checkY = dest[0] - 1;
+                    else
+                        checkY = dest[0] +1;
+
+                    if (dest[1] > loc[1]) // if the jump is to the right
+                        checkX = dest[1] - 1;
+                    else if (dest[1] < loc[1])  // if jump is to the left
+                        checkX = dest[1] + 1;
+
+                    int[] check = new int[]{checkY, checkX};
+                    if (model.getBlackSpriteLocation(check) >= 0)
+                        return true;
                 /*
                     might be some issues here at some point in the future
                  */
+                }
             }
         }
         // for black turn
-        else{
+        else {
             // for a normal move
-            if(model.getBlackSpriteLocation(dest) >= 0)
+            if (model.getBlackSpriteLocation(dest) >= 0 || model.getRedSpriteLocation(dest) >= 0)
                 return false;
-            if (loc[0] == dest[0] + 1 && dest[0] > 0 && dest[1] > 0 && dest[1] < 9) {
-                if (loc[1] == dest[1] + 1 || loc[1] == dest[1] - 1)
-                    return true;
-                return false;
-            } else if (loc[0] == dest[0] + 2){ // for a jump
-                int[] check = new int[2];
-                check[0] = dest[0] + 1;
-                if(dest[1] > loc[1]){ // if the jump is down and right
-                    check[1] = dest[1] - 1;
-                    // if there is a sprite
+            if (dest[0] > 0 && dest[0] < 9 && dest[1] > 0 && dest[1] < 9) { //if jump to location is on the board
+                if (loc[0] == dest[0] + 1 || (sprite.isKing() && loc[0] == dest[0] - 1)) {
+                    if (loc[1] == dest[1] + 1 || loc[1] == dest[1] - 1)
+                        return true;
+                    return false;
+                } else if (loc[0] == dest[0] + 2 || (sprite.isKing() && loc[0] == dest[0] - 2)) { // for a jump
+                    int checkX = 0, checkY;
+                    if(loc[0] == dest[0] + 2)
+                        checkY = dest[0] + 1;
+                    else
+                        checkY = dest[0] - 1;
+
+                    if (dest[1] > loc[1])  // if the jump is down and right
+                        checkX = dest[1] - 1;
+                     else if (dest[1] < loc[1])  // if jump is up and left
+                        checkX = dest[1] + 1;
+                    int[] check = new int[]{checkY, checkX};
+                    if (model.getRedSpriteLocation(check) >= 0)
+                        return true;
                 }
-                else if(dest[1] < loc[1]){ // if jump is up and left
-                    check[1] = dest[1] + 1;
-                }
-                if(model.getRedSpriteLocation(check) >= 0)
-                    return true;
             }
         }
 
@@ -219,32 +251,58 @@ public class Controller implements MouseListener {
     public boolean checkNext(){
         int[] currentBlock = selectedSprite.getBlock();
         int[] temp = new int[2];
-
+        int checkX = 0, checkY = 0;
         int loc;
         // maybe 4 if statements for the values of i, each manipulates current block then check against previous
         // check in the 3 locations that are not previous block
         for(int i = 0; i < 2; i++) {
             if (i == 0) {
-                if(playerTurn) // if player turn then temp[0] is one up from currentBlock[0], otherway for black turn
-                    temp[0] = currentBlock[0] + 1;
+                if(playerTurn) // if player turn then temp[0] is one up from currentBlock[0], other way for black turn
+                    checkY = currentBlock[0] + 1;
                 else
-                    temp[0] = currentBlock[0] - 1;
-                temp[1] = currentBlock[1] + 1;
+                    checkY = currentBlock[0] - 1;
+                checkX = currentBlock[1] + 1;
             } else if (i == 1) {
                 if(playerTurn)
-                    temp[0] = currentBlock[0] + 1;
+                    checkY = currentBlock[0] + 1;
                 else
-                    temp[0] = currentBlock[0] - 1;
-                temp[1] = currentBlock[1] - 1;
+                    checkY = currentBlock[0] - 1;
+                checkX = currentBlock[1] - 1;
             }
+            temp[0] = checkY;
+            temp[1] = checkX;
             if (playerTurn)
                 loc = model.getBlackSpriteLocation(temp);
-
             else
                 loc = model.getRedSpriteLocation(temp);
             if (loc >= 0)
                 if (checkNext(loc))
                     return true;
+        }
+        if(selectedSprite.isKing()){
+            for(int i = 0; i < 2; i++){
+                if(i == 0) {
+                    if (playerTurn)
+                        checkY = currentBlock[0] - 1;
+                    else
+                        checkY = currentBlock[0] + 1;
+                }
+                else{
+                    if(playerTurn)
+                        checkY = currentBlock[0] + 1;
+                    else
+                        checkY = currentBlock[1] + 1;
+                }
+                temp[0] = checkY;
+                temp[1] = checkX;
+                if(playerTurn)
+                    loc = model.getBlackSpriteLocation(temp);
+                else
+                    loc = model.getRedSpriteLocation(temp);
+                if(loc >=0)
+                    if(checkNext(loc))
+                        return true;
+            }
         }
 
         return false;
@@ -314,7 +372,7 @@ public class Controller implements MouseListener {
         ai
         multi-jump
         game over menu
-        turning them into a queen if it makes it to the opposite side
+        implement the king movement
 
         MOVING:
         -   if its a jump then remove the checker
