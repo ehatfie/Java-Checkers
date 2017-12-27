@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 import javax.swing.Timer;
 import javax.swing.SwingUtilities;
 
@@ -139,8 +140,10 @@ public class Controller implements MouseListener {
                         }
                     }
                 }
-                else
+                else {
                     aiPlayer();
+                    playerTurn = true;
+                }
 
             }
         } else if (SwingUtilities.isRightMouseButton(e)) {
@@ -388,16 +391,38 @@ public class Controller implements MouseListener {
 
             }
         }
+        int[] bestMove = findBestMove(moves);
+        model.moveBlackSprite(bestMove[0], new int[]{bestMove[1], bestMove[2]});
         System.out.println();
     }
     public int[] findBestMove(ArrayList<int[]> moves){
-        int[] nextMove = new int[2];
+        int[] nextMove, currentPos, bestMove = new int[3];
+        ArrayList<int[]> bestMoves = new ArrayList<>();
+        int distance, maxDistance = 0;
         Sprite sprite;
-        for(int i = 0; i < moves.size(); i++) {
-            sprite = model.getBlackSprite(moves.get(0)[0]);
-            nextMove = new int[]{moves.get(i)[1],moves.get(i)[2]};
+        for(int i = 0; i < moves.size(); i++) { // maybe a problem here
+            sprite = model.getBlackSprite(moves.get(0)[0]); // get the sprite that the move applies to
+            nextMove = new int[]{moves.get(i)[1],moves.get(i)[2]};// get the move that it wants to make
+            currentPos = sprite.getBlock(); // get the current position
+            distance = currentPos[0] - nextMove[0];
+            if(distance > maxDistance){ // if there is a new "best" move, best move is based on how many jumps atm
+                maxDistance = distance;
+                bestMove = moves.get(i);
+                bestMoves.clear();// empties the old best moves
+            }
+            else if(distance == maxDistance) { // if there is a move that has the same best move
+                // check if bestMoves list does not contain the current best move
+                if(!bestMoves.contains(bestMove))
+                    bestMoves.add(bestMove);
+                bestMoves.add(moves.get(i));// add best move of equal distance
+                // this is where the min would be found, maybe after its all collected
+            }
+
         }
-        return nextMove;
+        if(bestMoves.size() > 0)// if there is multiple equal best moves, currently going to pick a random one
+            bestMove = bestMoves.get(new Random().nextInt(bestMoves.size()));
+
+        return bestMove;
 
        // figure out how to assign some sort of value to the moves
        // maybe how far from the initial spot it is, how many red checkers it will remove.
@@ -444,10 +469,6 @@ public class Controller implements MouseListener {
         game over menu
 
 
-        MOVING:
-        -   if its a jump then remove the checker
-        -   dont let the user move sideways
-
     IDEAS:
         -   each sprite has its (x,y) block number in it, can only move -1 to x block if it isnt jumping
         -   stack to track the moves
@@ -464,4 +485,8 @@ public class Controller implements MouseListener {
             only have it check the best current move not best possible move
             first have it return best options
             random to select if they are all even
+            for the points if it can make it a king then thats the best one
+        TODO:
+            add ai for king
+         
  */
