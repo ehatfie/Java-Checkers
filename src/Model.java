@@ -95,6 +95,13 @@ public class Model {
     public Sprite getRedSprite(int loc){ return red.get(loc); }
     // returns black sprite object
     public Sprite getBlackSprite(int loc){ return black.get(loc); }
+    //returns the index of the sprite passed to it
+    public int getIndex(Sprite sprite){
+        if(red.contains(sprite))
+            return red.indexOf(sprite);
+        else
+            return black.indexOf(sprite);
+    }
     // moves red checkers
     public void moveRedSprite(int index, int[] destination){
         red.get(index).setBlock(destination);

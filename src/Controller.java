@@ -69,8 +69,10 @@ public class Controller implements MouseListener {
                         if (moveTo[1] == selectedSprite.getBlock()[1] + 2 || moveTo[1] == selectedSprite.getBlock()[1] - 2)
                             check = true;
                         model.moveRedSprite(index, moveTo);
-                        if (check)
+                        if (check) {
                             again = checkNext();
+                            check = false;
+                        }
                         if (!again) {
                             hasSprite = false;
                             if (selectedSprite.isKing())
@@ -158,10 +160,17 @@ public class Controller implements MouseListener {
             }
             else{
                 hasSprite = false;
-                if(selectedSprite.isKing())
-                    selectedSprite.setImage("grayKing.png");
-                selectedSprite.setImage("grayTransparent.png");
-                System.out.println("Deselected gray checker");
+                if(model.getRedSpriteLocation(selectedSprite.getBlock()) == 0) {
+                    if (selectedSprite.isKing())
+                        selectedSprite.setImage("grayKing.png");
+                    selectedSprite.setImage("grayTransparent.png");
+                    System.out.println("Deselected gray checker");
+                }
+                else{
+                    if(selectedSprite.isKing())
+                        selectedSprite.setImage("redKing.png");
+                    selectedSprite.setImage("redTransparent.png");
+                }
             }
         }
     }
@@ -264,18 +273,14 @@ public class Controller implements MouseListener {
         int loc;
         // maybe 4 if statements for the values of i, each manipulates current block then check against previous
         // check in the 3 locations that are not previous block
+        if(playerTurn) // if player turn then temp[0] is one up from currentBlock[0], other way for black turn
+            checkY = currentBlock[0] + 1;
+        else
+            checkY = currentBlock[0] - 1;
         for(int i = 0; i < 2; i++) {
             if (i == 0) {
-                if(playerTurn) // if player turn then temp[0] is one up from currentBlock[0], other way for black turn
-                    checkY = currentBlock[0] + 1;
-                else
-                    checkY = currentBlock[0] - 1;
                 checkX = currentBlock[1] + 1;
             } else if (i == 1) {
-                if(playerTurn)
-                    checkY = currentBlock[0] + 1;
-                else
-                    checkY = currentBlock[0] - 1;
                 checkX = currentBlock[1] - 1;
             }
             temp[0] = checkY;
@@ -335,7 +340,7 @@ public class Controller implements MouseListener {
                         temp3[0] += 1;
                         temp3[1] -= 1;
                     }
-                    if (temp3[1] > 8 || temp3[1] < 1)// if out of bounds
+                    if (temp3[1] > 8 || temp3[1] < 1 || temp3[0] > 8 || temp3[0] < 1)// if out of bounds
                         return false;
                     if (model.getBlackSpriteLocation(temp3) == -1)
                         return true;
@@ -371,8 +376,8 @@ public class Controller implements MouseListener {
         int[] currentLoc;
         ArrayList <int[]> moves = new ArrayList<>();
         for(int i = 0; i < 12; i++){ // goes through all the checkers
-            selected = model.getBlackSprite(i); // grabs one
-            currentLoc = new int[] {selected.getBlock()[0], selected.getBlock()[1]}; // gets the current location of the sprite
+            selectedSprite = model.getBlackSprite(i); // grabs one
+            currentLoc = new int[] {selectedSprite.getBlock()[0], selectedSprite.getBlock()[1]}; // gets the current location of the sprite
             for(int o = 0; o < 2; o++){// goes through the possible jumps
                 checkY = currentLoc[0] - 1;
                 if(o == 0)
@@ -380,10 +385,14 @@ public class Controller implements MouseListener {
                 else
                     checkX = currentLoc[1] + 1;// to the right
                 if(checkX > 0 && checkX < 9){// if its on the board
-                    if(model.getRedSpriteLocation(new int[]{checkY, checkX}) >= 0) { // if there is a red sprite
+                    if(model.getRedSpriteLocation(new int[]{checkY, checkX}) >= 0 && selectedSprite.isAlive()) { // if there is a red sprite
                         //maybe check if it can jump
+                        if(checkNext()){
+                            moves.addAll(findNext(1, currentLoc));
+                        }
+
                     }
-                    else if(checkMove(new int[]{checkY, checkX}, selected)){ // if the move is valid
+                    else if(checkMove(new int[]{checkY, checkX}, selectedSprite) && selectedSprite.isAlive()){ // if the move is valid
                         // maybe put them all in a list then see which is best
                         moves.add(new int[]{i, checkY, checkX});
                     }
@@ -391,8 +400,21 @@ public class Controller implements MouseListener {
 
             }
         }
-        int[] bestMove = findBestMove(moves);
-        model.moveBlackSprite(bestMove[0], new int[]{bestMove[1], bestMove[2]});
+        int[] moveTo = findBestMove(moves);
+        selectedSprite = model.getBlackSprite(moveTo[0]);
+        if (moveTo[1] == selectedSprite.getBlock()[0] - 2) {
+            if (moveTo[2] == selectedSprite.getBlock()[1] + 2)
+                model.removeRed(model.getRedSpriteLocation(new int[]{moveTo[1] + 1, moveTo[2] - 1}));
+            else if (moveTo[2] == selectedSprite.getBlock()[1] - 2)
+                model.removeRed(model.getRedSpriteLocation(new int[]{moveTo[1] + 1, moveTo[2] + 1}));
+        } else if (moveTo[1] == selectedSprite.getBlock()[0] + 2) {
+            if (moveTo[2] == selectedSprite.getBlock()[1] + 2)
+                model.removeRed(model.getRedSpriteLocation(new int[]{moveTo[1] - 1, moveTo[2] - 1}));
+            else if (moveTo[2] == selectedSprite.getBlock()[1] - 2)
+                model.removeRed(model.getRedSpriteLocation(new int[]{moveTo[1] - 1, moveTo[2] + 1}));
+        }
+
+        model.moveBlackSprite(moveTo[0], new int[]{moveTo[1], moveTo[2]});
         System.out.println();
     }
     public int[] findBestMove(ArrayList<int[]> moves){
@@ -401,7 +423,7 @@ public class Controller implements MouseListener {
         int distance, maxDistance = 0;
         Sprite sprite;
         for(int i = 0; i < moves.size(); i++) { // maybe a problem here
-            sprite = model.getBlackSprite(moves.get(0)[0]); // get the sprite that the move applies to
+            sprite = model.getBlackSprite(moves.get(i)[0]); // get the sprite that the move applies to
             nextMove = new int[]{moves.get(i)[1],moves.get(i)[2]};// get the move that it wants to make
             currentPos = sprite.getBlock(); // get the current position
             distance = currentPos[0] - nextMove[0];
@@ -456,6 +478,28 @@ public class Controller implements MouseListener {
          */
         return min;
     }
+    public ArrayList<int[]> findNext(int depth, int[] currentLocation){
+        int checkY, checkX;
+        ArrayList<int[]> moves = new ArrayList<>();
+        checkY = currentLocation[0] - depth - 1;
+
+        for (int i = 0; i < 2; i++) {
+            if (i == 0)
+                checkX = currentLocation[1] - depth - 1;
+            else
+                checkX = currentLocation[1] - depth + 1;
+            if (checkX > 0 && checkX < 9) {
+                if (model.getRedSpriteLocation(new int[]{checkY, checkX}) >= 0 && selectedSprite.isAlive()) {
+                    if (checkNext()) {
+                        findNext(depth + 1, new int[]{checkY, checkX});
+                    }
+                } else if(checkX != selectedSprite.getBlock()[1])
+                    moves.add(new int[]{model.getIndex(selectedSprite), checkY, checkX});
+            }
+        }
+
+        return moves;
+    }
     public static void main(String[] args) throws Exception{
         Menu temp = new Menu();
         Controller test = new Controller();
@@ -467,6 +511,7 @@ public class Controller implements MouseListener {
     TODO:
         ai
         game over menu
+        King cant jump backwards over something
 
 
     IDEAS:
@@ -476,7 +521,6 @@ public class Controller implements MouseListener {
             + that way if you go back
     FEATURES:
         -   An option to show best move
-
         -   Maybe difficulty settings where when you click the checker you can see possible moves
         -   Timer
 
@@ -488,5 +532,6 @@ public class Controller implements MouseListener {
             for the points if it can make it a king then thats the best one
         TODO:
             add ai for king
-         
+
+
  */
