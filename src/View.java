@@ -1,6 +1,5 @@
-import javax.swing.JFrame;
+import javax.swing.*;
 import java.awt.*;
-import javax.swing.JPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -40,10 +39,35 @@ public class View extends JFrame implements ActionListener {
     public View(Controller c) throws Exception{
         setTitle("Checkers!");
         setSize(800,1000); //subject to change
+
+        // creates menu bar
+        JMenuBar menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+        // Define and add two drop down menu to the menubar
+        JMenu fileMenu = new JMenu("Options");
+        menuBar.add(fileMenu);
+
+        // Create and add simple menu item to one of the drop down menu
+        JMenuItem newAction = new JMenuItem("New Game");
+
+        // Create and add Radio Buttons as simple menu items to one of the drop
+        // down menu
+        JRadioButtonMenuItem radioAction1 = new JRadioButtonMenuItem(
+                "Radio Button1");
+        JRadioButtonMenuItem radioAction2 = new JRadioButtonMenuItem(
+                "Radio Button2");
+        // Create a ButtonGroup and add both radio Button to it. Only one radio
+        // button in a ButtonGroup can be selected at a time.
+        ButtonGroup bg = new ButtonGroup();
+        bg.add(radioAction1);
+        bg.add(radioAction2);
+        fileMenu.add(newAction);
+
         getContentPane().add(new MyPanel(c));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
     }
+
 
     public void actionPerformed(ActionEvent evt){ repaint(); }
 

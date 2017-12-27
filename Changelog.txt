@@ -9,3 +9,6 @@
    -   Checkers can now become a king and jump in multi directions
    -   Fixed bug where gray checker could land on a red checker
    -   Realized how arrays actually work
+12/27/2017
+   -   Implementing the AI
+   -   Added a popup menu to chose single vs 2 player but it currently has no effect

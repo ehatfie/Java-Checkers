@@ -9,9 +9,11 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.Timer;
 import javax.swing.SwingUtilities;
 
+import static java.awt.SystemColor.menu;
 import static java.lang.Math.abs;
 
 
@@ -19,7 +21,7 @@ public class Controller implements MouseListener {
     Model model;
     View view;
     Sprite selectedSprite;
-    boolean hasSprite, playerTurn, again;
+    boolean hasSprite, playerTurn, again, twoPlayer;
     int index;
 
     Controller() throws IOException, Exception{
@@ -30,6 +32,7 @@ public class Controller implements MouseListener {
         index = -1;
         playerTurn = true;
         again = false;
+        twoPlayer = false;
     }
     public void update(Graphics g){ model.update(g); }
 
@@ -55,21 +58,21 @@ public class Controller implements MouseListener {
                 else {
                     int[] moveTo = pixelToBlock(e.getX(), e.getY());
                     // if move is valid
-                    if(checkMove(moveTo, selectedSprite)){
+                    if (checkMove(moveTo, selectedSprite)) {
                         // removes the jumped checker, first is for up right, second up left
-                        if(moveTo[1] == selectedSprite.getBlock()[1] + 2)
-                            model.removeBlack(model.getBlackSpriteLocation(new int[] {moveTo[0] - 1, moveTo[1] - 1 }));
+                        if (moveTo[1] == selectedSprite.getBlock()[1] + 2)
+                            model.removeBlack(model.getBlackSpriteLocation(new int[]{moveTo[0] - 1, moveTo[1] - 1}));
                         else if (moveTo[1] == selectedSprite.getBlock()[1] - 2)
-                            model.removeBlack(model.getBlackSpriteLocation(new int[] {moveTo[0] - 1, moveTo[1] + 1 }));
+                            model.removeBlack(model.getBlackSpriteLocation(new int[]{moveTo[0] - 1, moveTo[1] + 1}));
                         // if it jumped
-                        if(moveTo[1] == selectedSprite.getBlock()[1] + 2 || moveTo[1] == selectedSprite.getBlock()[1] - 2)
+                        if (moveTo[1] == selectedSprite.getBlock()[1] + 2 || moveTo[1] == selectedSprite.getBlock()[1] - 2)
                             check = true;
                         model.moveRedSprite(index, moveTo);
-                        if(check)
+                        if (check)
                             again = checkNext();
-                        if(!again) {
+                        if (!again) {
                             hasSprite = false;
-                            if(selectedSprite.isKing())
+                            if (selectedSprite.isKing())
                                 selectedSprite.setImage("redKing.png");
                             else
                                 selectedSprite.setImage("redTransparent.png");
@@ -78,7 +81,7 @@ public class Controller implements MouseListener {
                         }
                     }
                     // if move is not valid
-                    else{
+                    else {
                         System.out.println("Try another move");
                     }
                 }
@@ -86,55 +89,58 @@ public class Controller implements MouseListener {
             // black turn
 
             else{
-                // if there is no selected sprite
-                if (hasSprite == false) {
-                    // get index of the sprite in the array
-                    index = model.getBlackSpriteLocation(pixelToBlock(e.getX(), e.getY()));
-                    // if the index is in the number of sprites
-                    if (index >= 0 && index <= 12) {
-                        System.out.println("Success");
-                        selectedSprite = model.getBlackSprite(index);// get the sprite so it can be manipulated
-                        selectedSprite.setImage("graySelected.png"); // change image to the selected image
-                        hasSprite = true; // set the boolean for having a sprite selected
-                    }
-                }
-                // if a sprite is already selected
-                else {
-                    int[] moveTo = pixelToBlock(e.getX(), e.getY());
-                    // if move is valid
-                    if(checkMove(moveTo, selectedSprite)){
-                        if(moveTo[0] == selectedSprite.getBlock()[0] - 2){
-                            if(moveTo[1] == selectedSprite.getBlock()[1] + 2)
-                                model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] + 1, moveTo[1] - 1 }));
-                            else if (moveTo[1] == selectedSprite.getBlock()[1] - 2)
-                                model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] + 1, moveTo[1] + 1 }));
-                        }
-                        else if(moveTo[0] == selectedSprite.getBlock()[0] + 2){
-                            if(moveTo[1] == selectedSprite.getBlock()[1] + 2)
-                                model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] - 1, moveTo[1] - 1 }));
-                            else if (moveTo[1] == selectedSprite.getBlock()[1] - 2)
-                                model.removeRed(model.getRedSpriteLocation(new int[] {moveTo[0] - 1, moveTo[1] + 1 }));
-                        }
-                        if(moveTo[1] == selectedSprite.getBlock()[1] + 2 || moveTo[1] == selectedSprite.getBlock()[1] - 2)
-                            check = true;
-                        model.moveBlackSprite(index, moveTo);
-                        if(check)
-                            again = checkNext();
-                        if(!again) {
-                            hasSprite = false;
-                            if(selectedSprite.isKing())
-                                selectedSprite.setImage("grayKing.png");
-                            else
-                                selectedSprite.setImage("grayTransparent.png");
-                            playerTurn = true;
-                            again = false;
+                if(twoPlayer) {
+                    // if there is no selected sprite
+                    if (hasSprite == false) {
+                        // get index of the sprite in the array
+                        index = model.getBlackSpriteLocation(pixelToBlock(e.getX(), e.getY()));
+                        // if the index is in the number of sprites
+                        if (index >= 0 && index <= 12) {
+                            System.out.println("Success");
+                            selectedSprite = model.getBlackSprite(index);// get the sprite so it can be manipulated
+                            selectedSprite.setImage("graySelected.png"); // change image to the selected image
+                            hasSprite = true; // set the boolean for having a sprite selected
                         }
                     }
-                    // if move is not valid
+                    // if a sprite is already selected
                     else {
-                        System.out.println("Try another move");
+                        int[] moveTo = pixelToBlock(e.getX(), e.getY());
+                        // if move is valid
+                        if (checkMove(moveTo, selectedSprite)) {
+                            if (moveTo[0] == selectedSprite.getBlock()[0] - 2) {
+                                if (moveTo[1] == selectedSprite.getBlock()[1] + 2)
+                                    model.removeRed(model.getRedSpriteLocation(new int[]{moveTo[0] + 1, moveTo[1] - 1}));
+                                else if (moveTo[1] == selectedSprite.getBlock()[1] - 2)
+                                    model.removeRed(model.getRedSpriteLocation(new int[]{moveTo[0] + 1, moveTo[1] + 1}));
+                            } else if (moveTo[0] == selectedSprite.getBlock()[0] + 2) {
+                                if (moveTo[1] == selectedSprite.getBlock()[1] + 2)
+                                    model.removeRed(model.getRedSpriteLocation(new int[]{moveTo[0] - 1, moveTo[1] - 1}));
+                                else if (moveTo[1] == selectedSprite.getBlock()[1] - 2)
+                                    model.removeRed(model.getRedSpriteLocation(new int[]{moveTo[0] - 1, moveTo[1] + 1}));
+                            }
+                            if (moveTo[1] == selectedSprite.getBlock()[1] + 2 || moveTo[1] == selectedSprite.getBlock()[1] - 2)
+                                check = true;
+                            model.moveBlackSprite(index, moveTo);
+                            if (check)
+                                again = checkNext();
+                            if (!again) {
+                                hasSprite = false;
+                                if (selectedSprite.isKing())
+                                    selectedSprite.setImage("grayKing.png");
+                                else
+                                    selectedSprite.setImage("grayTransparent.png");
+                                playerTurn = true;
+                                again = false;
+                            }
+                        }
+                        // if move is not valid
+                        else {
+                            System.out.println("Try another move");
+                        }
                     }
                 }
+                else
+                    aiPlayer();
 
             }
         } else if (SwingUtilities.isRightMouseButton(e)) {
@@ -356,23 +362,87 @@ public class Controller implements MouseListener {
         }
         return false;
     }
+    public void aiPlayer(){
+        int loc, checkX, checkY;
+        Sprite selected;
+        int[] currentLoc;
+        ArrayList <int[]> moves = new ArrayList<>();
+        for(int i = 0; i < 12; i++){ // goes through all the checkers
+            selected = model.getBlackSprite(i); // grabs one
+            currentLoc = new int[] {selected.getBlock()[0], selected.getBlock()[1]}; // gets the current location of the sprite
+            for(int o = 0; o < 2; o++){// goes through the possible jumps
+                checkY = currentLoc[0] - 1;
+                if(o == 0)
+                    checkX = currentLoc[1] - 1;// to the left
+                else
+                    checkX = currentLoc[1] + 1;// to the right
+                if(checkX > 0 && checkX < 9){// if its on the board
+                    if(model.getRedSpriteLocation(new int[]{checkY, checkX}) >= 0) { // if there is a red sprite
+                        //maybe check if it can jump
+                    }
+                    else if(checkMove(new int[]{checkY, checkX}, selected)){ // if the move is valid
+                        // maybe put them all in a list then see which is best
+                        moves.add(new int[]{i, checkY, checkX});
+                    }
+                }
 
+            }
+        }
+        System.out.println();
+    }
+    public int[] findBestMove(ArrayList<int[]> moves){
+        int[] nextMove = new int[2];
+        Sprite sprite;
+        for(int i = 0; i < moves.size(); i++) {
+            sprite = model.getBlackSprite(moves.get(0)[0]);
+            nextMove = new int[]{moves.get(i)[1],moves.get(i)[2]};
+        }
+        return nextMove;
+
+       // figure out how to assign some sort of value to the moves
+       // maybe how far from the initial spot it is, how many red checkers it will remove.
+       // ideally implement it so it sets up jumps but thats hard
+    }
+    public int maxValue(){
+        int max = 0;
+        /*
+        if terminal(s)
+            return utility(best min)
+        v = -infinity
+        for a,s in successors(state) do
+            v = max(v, maxValue(s)) // v = the maximum of current v and the v returned from MaxValue
+
+         return v;
+            */
+
+        return max;
+    }
+
+    public int minValue(){
+        int min = 0;
+
+        /*
+        if terminal(s)
+            return utility(best min)
+         v = +infinity
+         for a,s in successors(state) do
+            v = min(v, maxValue(s) //v = the minimum of current v and the v returned from minValue
+         return v;
+         */
+        return min;
+    }
     public static void main(String[] args) throws Exception{
-
+        Menu temp = new Menu();
         Controller test = new Controller();
-        //new Controller();
 
-        System.out.println("");
     }
 
 }
 /*
     TODO:
-        intro menu
         ai
-        multi-jump
         game over menu
-        implement the king movement
+
 
         MOVING:
         -   if its a jump then remove the checker
@@ -389,5 +459,9 @@ public class Controller implements MouseListener {
         -   Maybe difficulty settings where when you click the checker you can see possible moves
         -   Timer
 
-
+    AI Implementation:
+        IDEAS
+            only have it check the best current move not best possible move
+            first have it return best options
+            random to select if they are all even
  */
