@@ -22,7 +22,7 @@ public class Controller implements MouseListener {
     Model model;
     View view;
     Sprite selectedSprite;
-    boolean hasSprite, playerTurn, again, twoPlayer;
+    boolean hasSprite, playerTurn, again, twoPlayer, moved;
     int index;
 
     Controller() throws IOException, Exception{
@@ -34,6 +34,7 @@ public class Controller implements MouseListener {
         playerTurn = true;
         again = false;
         twoPlayer = false;
+        moved = false;
     }
     public void update(Graphics g){ model.update(g); }
 
@@ -69,6 +70,7 @@ public class Controller implements MouseListener {
                         if (moveTo[1] == selectedSprite.getBlock()[1] + 2 || moveTo[1] == selectedSprite.getBlock()[1] - 2)
                             check = true;
                         model.moveRedSprite(index, moveTo);
+                        moved = true;
                         if (check) {
                             again = checkNext();
                             check = false;
@@ -81,16 +83,26 @@ public class Controller implements MouseListener {
                                 selectedSprite.setImage("redTransparent.png");
                             playerTurn = false;
                             again = false;
+                            moved = false;
                         }
                     }
                     // if move is not valid
                     else {
                         System.out.println("Try another move");
+                        if(checkNext() ==  false && moved == true) {
+                            hasSprite = false;
+                            if (selectedSprite.isKing())
+                                selectedSprite.setImage("redKing.png");
+                            else
+                                selectedSprite.setImage("redTransparent.png");
+                            playerTurn = false;
+                            again = false;
+                            moved = false;
+                        }
                     }
                 }
             }
             // black turn
-
             else{
                 if(twoPlayer) {
                     // if there is no selected sprite
@@ -124,6 +136,7 @@ public class Controller implements MouseListener {
                             if (moveTo[1] == selectedSprite.getBlock()[1] + 2 || moveTo[1] == selectedSprite.getBlock()[1] - 2)
                                 check = true;
                             model.moveBlackSprite(index, moveTo);
+                            moved = true;
                             if (check)
                                 again = checkNext();
                             if (!again) {
@@ -134,6 +147,7 @@ public class Controller implements MouseListener {
                                     selectedSprite.setImage("grayTransparent.png");
                                 playerTurn = true;
                                 again = false;
+                                moved = false;
                             }
                         }
                         // if move is not valid
@@ -279,19 +293,21 @@ public class Controller implements MouseListener {
             checkY = currentBlock[0] - 1;
         for(int i = 0; i < 2; i++) {
             if (i == 0) {
-                checkX = currentBlock[1] + 1;
+                checkX = currentBlock[1] + 1; // to the right
             } else if (i == 1) {
-                checkX = currentBlock[1] - 1;
+                checkX = currentBlock[1] - 1; // to the left
             }
-            temp[0] = checkY;
-            temp[1] = checkX;
-            if (playerTurn)
-                loc = model.getBlackSpriteLocation(temp);
-            else
-                loc = model.getRedSpriteLocation(temp);
-            if (loc >= 0)
-                if (checkNext(loc))
-                    return true;
+            if(checkX > 0 && checkX < 9) {
+                temp[0] = checkY;
+                temp[1] = checkX;
+                if (playerTurn)
+                    loc = model.getBlackSpriteLocation(temp);
+                else
+                    loc = model.getRedSpriteLocation(temp);
+                if (loc >= 0) // if there is an opposing checker to the right or left of it
+                    if (checkNext(loc, currentBlock))
+                        return true;
+            }
         }
         if(selectedSprite.isKing()){
             for(int i = 0; i < 2; i++){
@@ -314,90 +330,95 @@ public class Controller implements MouseListener {
                 else
                     loc = model.getRedSpriteLocation(temp);
                 if(loc >=0)
-                    if(checkNext(loc))
+                    if(checkNext(loc, currentBlock))
                         return true;
             }
         }
 
         return false;
     }
-    public boolean checkNext(int loc){
+    public boolean checkNext(int loc, int[] previousLoc){
         Sprite sprite2;
-        int[] temp3, currentBlock;
-        int temp2 = -1;
+        int[] temp3, currentloc;
+        int temp = -1, checkX, checkY;
 
         if(playerTurn) {
             sprite2 = model.getBlackSprite(loc); // get the sprite that were going to use to check for jumps
-            currentBlock = sprite2.getBlock(); // gets current block
-            temp3 = new int[] {currentBlock[0], currentBlock[1]}; // puts it in a temporary variable, have been having issues otherwise
+            currentloc = sprite2.getBlock(); // gets current block
+            temp3 = new int[] {currentloc[0], currentloc[1]}; // puts it in a temporary variable, have been having issues otherwise
+            checkY = currentloc[0] + 1;
             // goes through 2 it can jump
-            if(temp3[0] + 1 <= 8) { // if the block is on the board
-                for (int i = 0; i < 2; i++) {
-                    if (i == 0) {
-                        temp3[0] += 1;
-                        temp3[1] += 1;
-                    } else if (i == 1) {
-                        temp3[0] += 1;
-                        temp3[1] -= 1;
-                    }
-                    if (temp3[1] > 8 || temp3[1] < 1 || temp3[0] > 8 || temp3[0] < 1)// if out of bounds
+            if(checkY <= 8) { // if the block is on the board
+                // same direction
+                temp = previousLoc[1] - currentloc[1];
+                checkX = currentloc[1] + temp;
+                    if (checkX < 1 || checkX > 8)// if out of bounds
                         return false;
-                    if (model.getBlackSpriteLocation(temp3) == -1)
+                    if (model.getBlackSpriteLocation(new int[]{checkY, checkX}) == -1)
                         return true;
                 }
-
             }
-        }
+
         else{
-            sprite2 = model.getRedSprite(loc);
-            currentBlock = sprite2.getBlock();
-            temp3 = new int[]{currentBlock[0], currentBlock[1]};
-            if(temp3[0] - 1 >= 1){
-                for(int i = 0; i < 2; i++) {
-                    if (i == 0) {
-                        temp3[0] -= 1;
-                        temp3[1] += 1;
-                    } else if (i == 1) {
-                        temp3[0] -= 1;
-                        temp3[1] -= 1;
-                    }
-                    if (temp3[1] > 8 || temp3[1] < 1)// if out of bounds
-                        return false;
-                    if (model.getRedSpriteLocation(temp3) == -1)
-                        return true;
-                }
+            sprite2 = model.getRedSprite(loc); // sprite being jumped
+            currentloc = sprite2.getBlock(); // location of the sprite being jumped
+            temp3 = new int[]{currentloc[0], currentloc[1]}; // modifiable array locations
+            temp = currentloc[1] - previousLoc[1];
+            checkY = currentloc[0] - 1;
+            checkX = currentloc[1] + temp;
+            if(checkY - 1 >= 1){
+                if (checkX > 8 || checkX < 1)// if out of bounds
+                    return false;
+                if (model.getRedSpriteLocation(new int[]{checkY, checkX}) == -1 )
+                    return true;
+
             }
         }
         return false;
     }
+    public boolean checkNext(int[] currentLoc){
+        int checkX = 0, checkY = 0, loc;
+        checkY = currentLoc[0] - 1;
+            if(checkX > 0 && checkX < 9) {
+                loc = model.getRedSpriteLocation(new int[]{checkY, checkX});
+                if (loc >= 0)
+                    if (checkX > 8 || checkX < 1)// if out of bounds
+                        return false;
+                    if (checkNext(loc, currentLoc))
+                        return true;
+            }
+        return false;
+    }
     public void aiPlayer(){
-        int loc, checkX, checkY;
+        int loc, checkX, checkY, temp;
         Sprite selected;
         int[] currentLoc;
         ArrayList <int[]> moves = new ArrayList<>();
-        for(int i = 0; i < 12; i++){ // goes through all the checkers
+        for(int i = 0; i < 12; i++) { // goes through all the checkers
             selectedSprite = model.getBlackSprite(i); // grabs one
-            currentLoc = new int[] {selectedSprite.getBlock()[0], selectedSprite.getBlock()[1]}; // gets the current location of the sprite
-            for(int o = 0; o < 2; o++){// goes through the possible jumps
-                checkY = currentLoc[0] - 1;
-                if(o == 0)
-                    checkX = currentLoc[1] - 1;// to the left
-                else
-                    checkX = currentLoc[1] + 1;// to the right
-                if(checkX > 0 && checkX < 9){// if its on the board
-                    if(model.getRedSpriteLocation(new int[]{checkY, checkX}) >= 0 && selectedSprite.isAlive()) { // if there is a red sprite
-                        //maybe check if it can jump
-                        if(checkNext()){
-                            moves.addAll(findNext(1, currentLoc));
+            if (selectedSprite.isAlive()) { // if the sprite is alive
+                currentLoc = new int[]{selectedSprite.getBlock()[0], selectedSprite.getBlock()[1]}; // gets the current location of the sprite
+                for (int o = 0; o < 2; o++) {// goes through the possible jumps
+                    checkY = currentLoc[0] - 1;
+                    if (o == 0)
+                        checkX = currentLoc[1] - 1;// to the left
+                    else
+                        checkX = currentLoc[1] + 1;// to the right
+                    if (checkX > 0 && checkX < 9) {// if its on the board
+                        if (model.getRedSpriteLocation(new int[]{checkY, checkX}) >= 0 ) { // if there is a red sprite
+                            //maybe check if it can jump
+                            if (checkNext()) {
+                                temp = checkX - currentLoc[1];
+                                moves.addAll(findNext(1, currentLoc, new int[]{checkY - 1, checkX + temp} ));
+                            }
+
+                        } else if (checkMove(new int[]{checkY, checkX}, selectedSprite) && model.getBlackSpriteLocation(new int[]{checkY, checkX}) == -1) { // if the move is valid
+                            // maybe put them all in a list then see which is best
+                            moves.add(new int[]{i, checkY, checkX});
                         }
+                    }
 
-                    }
-                    else if(checkMove(new int[]{checkY, checkX}, selectedSprite) && selectedSprite.isAlive()){ // if the move is valid
-                        // maybe put them all in a list then see which is best
-                        moves.add(new int[]{i, checkY, checkX});
-                    }
                 }
-
             }
         }
         int[] moveTo = findBestMove(moves);
@@ -420,26 +441,38 @@ public class Controller implements MouseListener {
     public int[] findBestMove(ArrayList<int[]> moves){
         int[] nextMove, currentPos, bestMove = new int[3];
         ArrayList<int[]> bestMoves = new ArrayList<>();
-        int distance, maxDistance = 0;
+        int distance, maxDistance = 0, temp;
         Sprite sprite;
         for(int i = 0; i < moves.size(); i++) { // maybe a problem here
             sprite = model.getBlackSprite(moves.get(i)[0]); // get the sprite that the move applies to
             nextMove = new int[]{moves.get(i)[1],moves.get(i)[2]};// get the move that it wants to make
-            currentPos = sprite.getBlock(); // get the current position
-            distance = currentPos[0] - nextMove[0];
-            if(distance > maxDistance){ // if there is a new "best" move, best move is based on how many jumps atm
-                maxDistance = distance;
-                bestMove = moves.get(i);
-                bestMoves.clear();// empties the old best moves
-            }
-            else if(distance == maxDistance) { // if there is a move that has the same best move
-                // check if bestMoves list does not contain the current best move
-                if(!bestMoves.contains(bestMove))
-                    bestMoves.add(bestMove);
-                bestMoves.add(moves.get(i));// add best move of equal distance
-                // this is where the min would be found, maybe after its all collected
-            }
+            currentPos = sprite.getBlock();// get the current position
+            temp = currentPos[1] - nextMove[1];
+            if(model.getBlackSpriteLocation(new int[] {nextMove[0], nextMove[1]}) == -1) { // if there isnt a black checker there
+                // if its a jump, checking if its jumping over a black checker
+                if(temp == 2 || temp == -2){
+                    System.out.println();
+                    if(model.getBlackSpriteLocation(new int[] {nextMove[0] + 1, nextMove[1] + (temp/2)}) == -1){
+                        distance = currentPos[0] - nextMove[0];
+                    }
+                    else
+                        distance = 0;
+                }
+                else
+                    distance = currentPos[0] - nextMove[0];
 
+                if (distance > maxDistance) { // if there is a new "best" move, best move is based on how many jumps atm
+                    maxDistance = distance;
+                    bestMove = moves.get(i);
+                    bestMoves.clear();// empties the old best moves
+                } else if (distance == maxDistance) { // if there is a move that has the same best move
+                    // check if bestMoves list does not contain the current best move
+                    if (!bestMoves.contains(bestMove))
+                        bestMoves.add(bestMove);
+                    bestMoves.add(moves.get(i));// add best move of equal distance
+                    // this is where the min would be found, maybe after its all collected
+                }
+            }
         }
         if(bestMoves.size() > 0)// if there is multiple equal best moves, currently going to pick a random one
             bestMove = bestMoves.get(new Random().nextInt(bestMoves.size()));
@@ -478,26 +511,29 @@ public class Controller implements MouseListener {
          */
         return min;
     }
-    public ArrayList<int[]> findNext(int depth, int[] currentLocation){
-        int checkY, checkX;
+    public ArrayList<int[]> findNext(int depth, int[] currentLoc, int[] nextLoc) {
+        // current loc is the current location of the checker, nextLoc is the position it is jumping to
         ArrayList<int[]> moves = new ArrayList<>();
-        checkY = currentLocation[0] - depth - 1;
-
-        for (int i = 0; i < 2; i++) {
-            if (i == 0)
-                checkX = currentLocation[1] - depth - 1;
-            else
-                checkX = currentLocation[1] - depth + 1;
-            if (checkX > 0 && checkX < 9) {
-                if (model.getRedSpriteLocation(new int[]{checkY, checkX}) >= 0 && selectedSprite.isAlive()) {
-                    if (checkNext()) {
-                        findNext(depth + 1, new int[]{checkY, checkX});
-                    }
-                } else if(checkX != selectedSprite.getBlock()[1])
-                    moves.add(new int[]{model.getIndex(selectedSprite), checkY, checkX});
+        int temp = 0;
+        int checkY, checkX;
+        temp = nextLoc[1] - currentLoc[1]; // temp has the direction from the currentLoc to the jumpLoc
+        checkY = nextLoc[0] -1;
+        if(checkY > 1) { // if there is still a row that the checker can jump into
+            for (int i = 0; i < 2; i++) {
+                // check based on the next location, which is where this checker is jumping to. if there is a checker to the left then call checkNext and if it can jump then call findNext again if it cant, add to moves
+                if(i == 0)
+                    checkX = nextLoc[1] - 1;
+                else
+                    checkX = nextLoc[1] + 1;
+                if(checkX > 0 && checkX < 9) { // if the spot being checked is on the board
+                    if(model.getRedSpriteLocation(new int[]{checkY, checkX}) > 0) // if there is a red checker there
+                        if(checkNext(nextLoc))
+                            findNext(depth++, nextLoc, new int[]{checkY, checkX});
+                        else
+                            moves.add(new int[]{model.getIndex(selectedSprite), nextLoc[0], nextLoc[1]});
+                }
             }
         }
-
         return moves;
     }
     public static void main(String[] args) throws Exception{
@@ -532,6 +568,27 @@ public class Controller implements MouseListener {
             for the points if it can make it a king then thats the best one
         TODO:
             add ai for king
+            int checkY, checkX;
+        ArrayList<int[]> moves = new ArrayList<>();
+        checkY = currentLocation[0] - depth - 1;
+
+        for (int i = 0; i < 2; i++) {
+            if (i == 0)
+                checkX = currentLocation[1] - depth - 1;
+            else
+                checkX = currentLocation[1] - depth + 1;
+            if (checkX > 0 && checkX < 9) {
+                if (model.getRedSpriteLocation(new int[]{checkY, checkX}) >= 0 && selectedSprite.isAlive() && checkX != currentLocation[1]) {
+                    if (checkNext()) {
+                        findNext(depth + 1, new int[]{checkY, checkX});
+                    }
+                } else if(checkX != selectedSprite.getBlock()[1])
+                    moves.add(new int[]{model.getIndex(selectedSprite), checkY, checkX});
+            }
+        }
+
+        return moves;
+    }
 
 
  */

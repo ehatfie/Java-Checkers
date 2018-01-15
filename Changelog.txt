@@ -13,3 +13,8 @@
    -   Implementing the AI
    -   Added a popup menu to chose single vs 2 player but it currently has no effect
    -   AI is relatively implemented, only choses "best" decision for its current move not in the grand scheme of things
+
+1/14/2018
+   -   Fixed AI not jumping down and right
+   -   Updated the method to see if there is another jump available
+   -   Attempting to fix the bug that allows the red checker to move without ending turn
